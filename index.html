@@ -712,7 +712,7 @@
       }
     });
 
-    // Se a página for aberta já com ?c=... na URL, decodifica automaticamente
+    // Se a página for aberta já com ?c=... na URL, mostra só a tela de revelação
     (function decodificarPorURL() {
       try {
         const params = new URLSearchParams(window.location.search);
@@ -722,8 +722,14 @@
         const nome = decodeName(c);
         if (!nome) return;
 
-        decodedName.textContent = nome;
-        decodeResult.style.display = "block";
+        const mainContainer = document.querySelector(".container");
+        if (mainContainer) {
+          mainContainer.style.display = "none";
+        }
+        if (viewOnly && viewOnlyName) {
+          viewOnlyName.textContent = nome;
+          viewOnly.style.display = "flex";
+        }
       } catch (e) {
         // Se algo der errado, só não faz nada
       }
