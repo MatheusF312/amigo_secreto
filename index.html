@@ -285,6 +285,62 @@
       transform: translateY(0);
     }
 
+    /* Tela somente de visualização do resultado (link direto) */
+    .view-only {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(79, 70, 229, 0.25), transparent 55%),
+                  #020617;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 50;
+    }
+
+    .view-only-card {
+      max-width: 420px;
+      width: 100%;
+      background: rgba(15, 23, 42, 0.98);
+      border-radius: 20px;
+      padding: 24px 20px 20px;
+      box-shadow:
+        0 25px 40px -12px rgba(15, 23, 42, 0.95),
+        0 0 0 1px rgba(148, 163, 184, 0.25);
+      text-align: center;
+    }
+
+    .view-only-title {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      color: #f9fafb;
+    }
+
+    .view-only-subtitle {
+      font-size: 0.95rem;
+      color: #9ca3af;
+      margin-bottom: 18px;
+    }
+
+    .view-only-name {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, rgba(129, 140, 248, 0.3), transparent 55%),
+                  rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(129, 140, 248, 0.7);
+      color: #e0e7ff;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .view-only-footer {
+      margin-top: 14px;
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
     @media (max-width: 640px) {
       body {
         padding: 12px;
@@ -299,6 +355,18 @@
   </style>
 </head>
 <body>
+  <!-- Tela somente para quem acessa com link (mostra só o resultado) -->
+  <div id="viewOnly" class="view-only">
+    <div class="view-only-card">
+      <div class="view-only-title">🎁 Seu amigo secreto é</div>
+      <div class="view-only-subtitle">Guarde este nome e não conte pra ninguém 😉</div>
+      <div class="view-only-name" id="viewOnlyName"></div>
+      <div class="view-only-footer">
+        Se você atualizar a página ou fechar o link, pode usar o mesmo link de novo para ver o nome.
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <h1>🎁 Sorteador de Amigo Secreto</h1>
     <p>
@@ -398,6 +466,21 @@
       }
     }
 
+    // Gera um link com o código na URL para ser enviado ao participante
+    function gerarLinkCodigo(codigoBase) {
+      try {
+        const url = new URL(window.location.href);
+        // Garante que não reaproveitamos query/hash antigos
+        url.search = "";
+        url.hash = "";
+        url.searchParams.set("c", codigoBase);
+        return url.toString();
+      } catch (e) {
+        // Fallback simples, caso algo dê errado com URL()
+        return window.location.origin + window.location.pathname + "?c=" + encodeURIComponent(codigoBase);
+      }
+    }
+
     // Gera um embaralhamento sem ninguém tirar a si mesmo (derangement)
     function gerarSorteio(nomes) {
       const n = nomes.length;
@@ -455,6 +538,9 @@
     const decodeResult = document.getElementById("decodeResult");
     const decodedName = document.getElementById("decodedName");
 
+    const viewOnly = document.getElementById("viewOnly");
+    const viewOnlyName = document.getElementById("viewOnlyName");
+
     function limparErros() {
       drawError.style.display = "none";
       decodeError.style.display = "none";
@@ -493,7 +579,8 @@
       try {
         const sorteio = gerarSorteio(nomesUnicos);
         sorteio.forEach(par => {
-          const codigo = encodeName(par.tirou);
+          const codigoBase = encodeName(par.tirou);
+          const codigoLink = gerarLinkCodigo(codigoBase);
           const tr = document.createElement("tr");
 
           // Coluna 1: botão de copiar
@@ -506,16 +593,16 @@
           const tdPessoa = document.createElement("td");
           tdPessoa.textContent = par.pessoa;
 
-          // Coluna 3: código
+          // Coluna 3: código (link gerado)
           const tdCodigo = document.createElement("td");
           tdCodigo.className = "code-cell";
-          tdCodigo.textContent = codigo;
+          tdCodigo.textContent = codigoLink;
           tdCodigo.title = "Clique duas vezes para selecionar";
 
           btnCopy.addEventListener("click", async () => {
             try {
               if (navigator.clipboard && navigator.clipboard.writeText) {
-                await navigator.clipboard.writeText(codigo);
+                await navigator.clipboard.writeText(codigoLink);
                 btnCopy.textContent = "Copiado!";
                 // setTimeout(() => (btnCopy.textContent = "Copiar"), 1500);
               } else {
@@ -557,19 +644,43 @@
       }
     });
 
+    // Tenta extrair o código bruto (Base64) de um link ou texto colado
+    function extrairCodigoBruto(valor) {
+      const texto = valor.trim();
+      if (!texto) return "";
+
+      // Se for um link (https://...), tenta pegar o parâmetro ?c=
+      if (texto.startsWith("http://") || texto.startsWith("https://")) {
+        try {
+          const url = new URL(texto);
+          const param = url.searchParams.get("c");
+          if (param) return param;
+          // fallback: se vier algo como #c=...
+          if (url.hash && url.hash.startsWith("#c=")) {
+            return url.hash.slice(3);
+          }
+        } catch (e) {
+          // Se der erro, continua e tenta usar o próprio texto
+        }
+      }
+
+      return texto;
+    }
+
     decodeButton.addEventListener("click", () => {
       limparErros();
       decodeResult.style.display = "none";
       decodedName.textContent = "";
 
-      const code = codeInput.value.trim();
-      if (!code) {
-        decodeError.textContent = "Cole o código que você recebeu para decodificar.";
+      const inputValor = codeInput.value.trim();
+      if (!inputValor) {
+        decodeError.textContent = "Cole o código ou o link que você recebeu para decodificar.";
         decodeError.style.display = "block";
         return;
       }
 
-      const nome = decodeName(code);
+      const codigoBruto = extrairCodigoBruto(inputValor);
+      const nome = decodeName(codigoBruto);
       if (!nome) {
         decodeError.textContent = "Código inválido ou corrompido. Confira se copiou tudo certinho.";
         decodeError.style.display = "block";
@@ -595,6 +706,30 @@
         decodeButton.click();
       }
     });
+
+    // Se a página for aberta já com ?c=... na URL, decodifica automaticamente
+    (function decodificarPorURL() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const c = params.get("c");
+        if (!c) return;
+
+        const nome = decodeName(c);
+        if (!nome) return;
+
+        // Mostra somente a tela de visualização simples
+        const mainContainer = document.querySelector(".container");
+        if (mainContainer) {
+          mainContainer.style.display = "none";
+        }
+        if (viewOnly && viewOnlyName) {
+          viewOnlyName.textContent = nome;
+          viewOnly.style.display = "flex";
+        }
+      } catch (e) {
+        // Se algo der errado, só não faz nada
+      }
+    })();
   </script>
 </body>
 </html>
