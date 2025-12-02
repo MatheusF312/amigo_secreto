@@ -581,6 +581,7 @@
         sorteio.forEach(par => {
           const codigoBase = encodeName(par.tirou);
           const codigoLink = gerarLinkCodigo(codigoBase);
+          const textoParaCopiar = codigoLink; // sempre inclui ?c=CODIGO na URL
           const tr = document.createElement("tr");
 
           // Coluna 1: botão de copiar
@@ -602,7 +603,7 @@
           btnCopy.addEventListener("click", async () => {
             try {
               if (navigator.clipboard && navigator.clipboard.writeText) {
-                await navigator.clipboard.writeText(codigoLink);
+                await navigator.clipboard.writeText(textoParaCopiar);
                 btnCopy.textContent = "Copiado!";
                 // setTimeout(() => (btnCopy.textContent = "Copiar"), 1500);
               } else {
@@ -717,15 +718,8 @@
         const nome = decodeName(c);
         if (!nome) return;
 
-        // Mostra somente a tela de visualização simples
-        const mainContainer = document.querySelector(".container");
-        if (mainContainer) {
-          mainContainer.style.display = "none";
-        }
-        if (viewOnly && viewOnlyName) {
-          viewOnlyName.textContent = nome;
-          viewOnly.style.display = "flex";
-        }
+        decodedName.textContent = nome;
+        decodeResult.style.display = "block";
       } catch (e) {
         // Se algo der errado, só não faz nada
       }
