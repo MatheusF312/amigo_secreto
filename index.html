@@ -200,14 +200,15 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: 0.8rem;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 0;
+      overflow: visible;
+      text-overflow: initial;
+      max-width: none;
     }
 
     .results-wrapper {
       max-height: 260px;
-      overflow: auto;
+      overflow-x: auto;
+      overflow-y: auto;
       margin-top: 8px;
       border-radius: 12px;
       border: 1px solid #1f2937;
@@ -260,6 +261,30 @@
       color: #6b7280;
     }
 
+    .btn-copy {
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+      margin-left: 6px;
+    }
+
+    .btn-copy:hover {
+      background: #111827;
+      border-color: #6b7280;
+      transform: translateY(-1px);
+    }
+
+    .btn-copy:active {
+      transform: translateY(0);
+    }
+
     @media (max-width: 640px) {
       body {
         padding: 12px;
@@ -269,10 +294,6 @@
       }
       h1 {
         font-size: 1.4rem;
-      }
-      th:nth-child(2),
-      td:nth-child(2) {
-        display: none;
       }
     }
   </style>
@@ -314,6 +335,7 @@
           <table>
             <thead>
               <tr>
+                <th>Copiar código</th>
                 <th>Pessoa</th>
                 <th>Código para enviar</th>
               </tr>
@@ -474,13 +496,46 @@
           const codigo = encodeName(par.tirou);
           const tr = document.createElement("tr");
 
+          // Coluna 1: botão de copiar
+          const tdCopy = document.createElement("td");
+          const btnCopy = document.createElement("button");
+          btnCopy.textContent = "Copiar";
+          btnCopy.className = "btn-copy";
+
+          // Coluna 2: nome da pessoa
           const tdPessoa = document.createElement("td");
           tdPessoa.textContent = par.pessoa;
 
+          // Coluna 3: código
           const tdCodigo = document.createElement("td");
           tdCodigo.className = "code-cell";
           tdCodigo.textContent = codigo;
           tdCodigo.title = "Clique duas vezes para selecionar";
+
+          btnCopy.addEventListener("click", async () => {
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(codigo);
+                btnCopy.textContent = "Copiado!";
+                // setTimeout(() => (btnCopy.textContent = "Copiar"), 1500);
+              } else {
+                const range = document.createRange();
+                range.selectNodeContents(tdCodigo);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                document.execCommand("copy");
+                btnCopy.textContent = "Copiado!";
+                // setTimeout(() => (btnCopy.textContent = "Copiar"), 1500);
+              }
+            } catch (e) {
+              btnCopy.textContent = "Erro";
+              setTimeout(() => (btnCopy.textContent = "Copiar"), 1500);
+            }
+          });
+
+          tdCopy.appendChild(btnCopy);
+
           tdCodigo.addEventListener("dblclick", () => {
             const range = document.createRange();
             range.selectNodeContents(tdCodigo);
@@ -489,6 +544,7 @@
             sel.addRange(range);
           });
 
+          tr.appendChild(tdCopy);
           tr.appendChild(tdPessoa);
           tr.appendChild(tdCodigo);
           resultsBody.appendChild(tr);
