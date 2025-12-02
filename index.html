@@ -581,7 +581,11 @@
         sorteio.forEach(par => {
           const codigoBase = encodeName(par.tirou);
           const codigoLink = gerarLinkCodigo(codigoBase);
-          const textoParaCopiar = codigoLink; // sempre inclui ?c=CODIGO na URL
+          const textoParaCopiar =
+            "Oi " + par.pessoa + "! 👋\n\n" +
+            "Este é o seu link do amigo secreto, clique para descobrir quem você tirou:\n" +
+            codigoLink + "\n\n" +
+            "Não compartilhe esse link com ninguém 😉";
           const tr = document.createElement("tr");
 
           // Coluna 1: botão de copiar
