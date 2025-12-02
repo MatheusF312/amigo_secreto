@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sorteador de Amigo Secreto</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: #020617;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow:
+        0 20px 25px -5px rgba(15, 23, 42, 0.9),
+        0 8px 10px -6px rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.8rem;
+      color: #f9fafb;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 24px;
+      color: #e5e7eb;
+    }
+
+    p {
+      color: #cbd5f5;
+      font-size: 0.95rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+    }
+
+    textarea,
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+
+    textarea:focus,
+    input:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.7);
+      background: #020617;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: white;
+      box-shadow:
+        0 10px 15px -3px rgba(79, 70, 229, 0.6),
+        0 4px 6px -4px rgba(79, 70, 229, 0.6);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+      box-shadow:
+        0 14px 25px -5px rgba(79, 70, 229, 0.9),
+        0 8px 10px -6px rgba(79, 70, 229, 0.9);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow:
+        0 6px 10px -4px rgba(79, 70, 229, 0.7),
+        0 2px 4px -3px rgba(79, 70, 229, 0.7);
+    }
+
+    .btn-secondary {
+      background: #0f172a;
+      box-shadow: none;
+      border: 1px solid #1f2937;
+    }
+
+    .btn-secondary:hover {
+      filter: brightness(1.2);
+      box-shadow:
+        0 8px 20px -6px rgba(15, 23, 42, 0.9),
+        0 4px 6px -4px rgba(15, 23, 42, 0.9);
+    }
+
+    .section {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 14px;
+      background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.08), transparent 55%),
+                  radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.08), transparent 55%),
+                  #020617;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .section-header small {
+      color: #9ca3af;
+      font-size: 0.8rem;
+    }
+
+    .alert {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+    }
+
+    .alert-error {
+      background: rgba(248, 113, 113, 0.07);
+      border: 1px solid rgba(248, 113, 113, 0.5);
+      color: #fecaca;
+    }
+
+    .alert-info {
+      background: rgba(59, 130, 246, 0.07);
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      color: #bfdbfe;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    th {
+      font-weight: 600;
+      color: #e5e7eb;
+      background: rgba(15, 23, 42, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:hover td {
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .code-cell {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 0;
+    }
+
+    .results-wrapper {
+      max-height: 260px;
+      overflow: auto;
+      margin-top: 8px;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(15, 23, 42, 0.9);
+      color: #9ca3af;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+    }
+
+    .tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+    }
+
+    .muted {
+      color: #9ca3af;
+      font-size: 0.8rem;
+    }
+
+    .decoder-result {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px dashed #374151;
+      font-size: 0.95rem;
+    }
+
+    .decoder-name {
+      font-weight: 700;
+      color: #a5b4fc;
+    }
+
+    .footer {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+      .container {
+        padding: 16px;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      th:nth-child(2),
+      td:nth-child(2) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎁 Sorteador de Amigo Secreto</h1>
+    <p>
+      Cole todos os nomes separados por vírgula, clique em <strong>Sortear</strong> e envie para cada pessoa o
+      <strong>código</strong> que aparecer na frente do nome dela. Depois, qualquer participante pode usar o
+      <strong>Decodificador</strong> abaixo para descobrir, de forma fácil, quem tirou.
+    </p>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>1. Digite os participantes</h2>
+        <small>Exemplo: Ana, Bruno, Carla, Diego</small>
+      </div>
+
+      <label for="namesInput">Nomes (separados por vírgula):</label>
+      <textarea id="namesInput" placeholder="Ex: Ana, Bruno, Carla, Diego"></textarea>
+
+      <button id="drawButton">
+        <span>Sortear amigo secreto</span>
+      </button>
+
+      <div id="drawError" class="alert alert-error" style="display:none;"></div>
+
+      <div id="resultsSection" style="display:none; margin-top: 16px;">
+        <div class="section-header">
+          <h2>2. Códigos gerados</h2>
+        </div>
+        <p class="muted">
+          Envie <strong>somente o código</strong> para cada pessoa. Nem mesmo quem está organizando vê quem tirou quem:
+          só quem tem o código consegue descobrir o nome usando o decodificador abaixo.
+        </p>
+
+        <div class="results-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Pessoa</th>
+                <th>Código para enviar</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="alert alert-info">
+          Dica: você pode clicar duas vezes no código para selecioná-lo rapidamente e copiar.
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>3. Decodificador (para os participantes)</h2>
+        <small>Use o código que você recebeu da organização</small>
+      </div>
+
+      <label for="codeInput">Cole aqui o seu código:</label>
+      <input id="codeInput" type="text" placeholder="Ex: QW5hIC0tPiBDYXJsYQ==" />
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="decodeButton" class="btn-secondary">
+          <span>Descobrir quem eu tirei</span>
+        </button>
+        <button id="clearDecodeButton" class="btn-secondary">
+          <span>Limpar</span>
+        </button>
+      </div>
+
+      <div id="decodeError" class="alert alert-error" style="display:none;"></div>
+      <div id="decodeResult" class="decoder-result" style="display:none;">
+        Você tirou: <span class="decoder-name" id="decodedName"></span> 🎉
+      </div>
+    </div>
+
+    <div class="footer">
+      Funciona totalmente offline. Basta abrir este arquivo no navegador.
+    </div>
+  </div>
+
+  <script>
+    // Utilidades de codificação para lidar com acentuação corretamente
+    function encodeName(name) {
+      // Codifica "Quem foi tirado" junto, para evitar confusão
+      const text = "VOCÊ TIROU: " + name;
+      return btoa(encodeURIComponent(text));
+    }
+
+    function decodeName(code) {
+      try {
+        const text = decodeURIComponent(atob(code.trim()));
+        const prefix = "VOCÊ TIROU: ";
+        if (!text.startsWith(prefix)) return null;
+        return text.slice(prefix.length);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Gera um embaralhamento sem ninguém tirar a si mesmo (derangement)
+    function gerarSorteio(nomes) {
+      const n = nomes.length;
+      if (n < 2) {
+        throw new Error("É preciso ter pelo menos 2 participantes.");
+      }
+
+      // Tenta gerar um sorteio até não ter ninguém tirando a si mesmo
+      const indices = [...nomes.keys()];
+      let tentativas = 0;
+      const maxTentativas = 5000;
+
+      while (tentativas < maxTentativas) {
+        tentativas++;
+
+        // Embaralha os índices (Fisher-Yates)
+        for (let i = n - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+
+        let valido = true;
+        for (let i = 0; i < n; i++) {
+          if (indices[i] === i) {
+            valido = false;
+            break;
+          }
+        }
+
+        if (valido) {
+          const resultado = [];
+          for (let i = 0; i < n; i++) {
+            resultado.push({
+              pessoa: nomes[i],
+              tirou: nomes[indices[i]]
+            });
+          }
+          return resultado;
+        }
+      }
+
+      throw new Error("Não foi possível gerar um sorteio válido. Tente novamente.");
+    }
+
+    const namesInput = document.getElementById("namesInput");
+    const drawButton = document.getElementById("drawButton");
+    const drawError = document.getElementById("drawError");
+    const resultsSection = document.getElementById("resultsSection");
+    const resultsBody = document.getElementById("resultsBody");
+
+    const codeInput = document.getElementById("codeInput");
+    const decodeButton = document.getElementById("decodeButton");
+    const clearDecodeButton = document.getElementById("clearDecodeButton");
+    const decodeError = document.getElementById("decodeError");
+    const decodeResult = document.getElementById("decodeResult");
+    const decodedName = document.getElementById("decodedName");
+
+    function limparErros() {
+      drawError.style.display = "none";
+      decodeError.style.display = "none";
+    }
+
+    drawButton.addEventListener("click", () => {
+      limparErros();
+      resultsSection.style.display = "none";
+      resultsBody.innerHTML = "";
+
+      const raw = namesInput.value
+        .split(",")
+        .map(n => n.trim())
+        .filter(n => n.length > 0);
+
+      const nomesUnicos = [...new Set(raw)];
+
+      if (raw.length === 0) {
+        drawError.textContent = "Digite pelo menos 2 nomes separados por vírgula.";
+        drawError.style.display = "block";
+        return;
+      }
+
+      if (nomesUnicos.length < 2) {
+        drawError.textContent = "É preciso ter pelo menos 2 nomes diferentes.";
+        drawError.style.display = "block";
+        return;
+      }
+
+      if (nomesUnicos.length !== raw.length) {
+        drawError.textContent = "Existem nomes repetidos. Remova as duplicações e tente novamente.";
+        drawError.style.display = "block";
+        return;
+      }
+
+      try {
+        const sorteio = gerarSorteio(nomesUnicos);
+        sorteio.forEach(par => {
+          const codigo = encodeName(par.tirou);
+          const tr = document.createElement("tr");
+
+          const tdPessoa = document.createElement("td");
+          tdPessoa.textContent = par.pessoa;
+
+          const tdCodigo = document.createElement("td");
+          tdCodigo.className = "code-cell";
+          tdCodigo.textContent = codigo;
+          tdCodigo.title = "Clique duas vezes para selecionar";
+          tdCodigo.addEventListener("dblclick", () => {
+            const range = document.createRange();
+            range.selectNodeContents(tdCodigo);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+          });
+
+          tr.appendChild(tdPessoa);
+          tr.appendChild(tdCodigo);
+          resultsBody.appendChild(tr);
+        });
+
+        resultsSection.style.display = "block";
+      } catch (e) {
+        drawError.textContent = e.message || "Erro ao gerar o sorteio. Tente novamente.";
+        drawError.style.display = "block";
+      }
+    });
+
+    decodeButton.addEventListener("click", () => {
+      limparErros();
+      decodeResult.style.display = "none";
+      decodedName.textContent = "";
+
+      const code = codeInput.value.trim();
+      if (!code) {
+        decodeError.textContent = "Cole o código que você recebeu para decodificar.";
+        decodeError.style.display = "block";
+        return;
+      }
+
+      const nome = decodeName(code);
+      if (!nome) {
+        decodeError.textContent = "Código inválido ou corrompido. Confira se copiou tudo certinho.";
+        decodeError.style.display = "block";
+        return;
+      }
+
+      decodedName.textContent = nome;
+      decodeResult.style.display = "block";
+    });
+
+    clearDecodeButton.addEventListener("click", () => {
+      codeInput.value = "";
+      decodeResult.style.display = "none";
+      decodedName.textContent = "";
+      decodeError.style.display = "none";
+      codeInput.focus();
+    });
+
+    // Permite usar Enter no campo de código para decodificar
+    codeInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        decodeButton.click();
+      }
+    });
+  </script>
+</body>
+</html>
+
+
